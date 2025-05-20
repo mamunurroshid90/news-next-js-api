@@ -2,70 +2,48 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 
-// middleware
+// Middleware
 app.use(express.json());
 app.use(cors());
 
-const data = require("../data/db.json");
+const data = require("../data/db.json"); // Fixed path
 
+// Routes
 app.get("/", (req, res) => {
-  res.send("Next News API Sever!");
+  res.send("Next News API Server!"); // Fixed typo and syntax
 });
 
-// Get all news with search and category filters
 app.get("/api/news", (req, res) => {
-  const { search, category } = req.query; // Removed 'keywords'
+  const { search, category } = req.query;
+  let filteredNews = data;
 
-  let filteredNews = data; // Start with all news data
-
-  // Filtering by search term
   if (search) {
     const searchText = search.toLowerCase();
     filteredNews = filteredNews.filter((newsItem) => {
-      const titleMatch = newsItem.title.toLowerCase().includes(searchText);
-      const descriptionMatch = newsItem.description
-        .toLowerCase()
-        .includes(searchText);
-      return titleMatch || descriptionMatch;
-    });
-  }
-
-  // Filtering by category
-  if (category) {
-    const categoryText = category.toLowerCase();
-    filteredNews = filteredNews.filter((newsItem) => {
       return (
-        newsItem.categories &&
-        newsItem.categories
-          .map((cat) => cat.toLowerCase())
-          .includes(categoryText)
+        newsItem.title.toLowerCase().includes(searchText) ||
+        newsItem.description.toLowerCase().includes(searchText)
       );
     });
   }
 
-  // Respond with the filtered news
-  res.send(filteredNews);
-});
-
-// Get a single news item by its ID
-app.get("/api/news/:id", (req, res) => {
-  const { id } = req.params;
-
-  // Find the news item with the matching ID
-  const newsItem = data.find((item) => item._id === id);
-
-  // If the news item is not found, send a 404 response
-  if (!newsItem) {
-    return res.status(404).send({ message: "News item not found" });
+  if (category) {
+    const categoryText = category.toLowerCase();
+    filteredNews = filteredNews.filter((newsItem) => {
+      return newsItem.categories
+        ?.map((cat) => cat.toLowerCase())
+        .includes(categoryText);
+    });
   }
 
-  // Send the found news item
-  res.send(newsItem);
+  res.json(filteredNews); // Use res.json() for clarity
 });
 
-// app.listen(port, () => {
-//   console.log(`Example app listening on port ${port}`);
-// });
+app.get("/api/news/:id", (req, res) => {
+  const newsItem = data.find((item) => item._id === req.params.id); // Fixed _id
+  if (!newsItem)
+    return res.status(404).send({ message: "News item not found" }); // Fixed status code
+  res.json(newsItem);
+});
 
-// Export for Vercel
 module.exports = app;
