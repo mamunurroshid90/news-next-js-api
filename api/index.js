@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-const port = process.env.PORT || 5000;
 const cors = require("cors");
 
 // middleware
@@ -64,6 +63,9 @@ app.get("/api/news/:id", (req, res) => {
   res.send(newsItem);
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Example app listening on port ${port}`);
+// });
+
+// Export for Vercel
+module.exports = app;
